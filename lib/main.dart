@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:animations/animations.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import 'dart:collection';
 
 void main() {
@@ -105,8 +106,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: Column(
                   children: [
                     TextField(
-                      onSubmitted: (String value) {
-                        Provider.of<SessionsModel>(context, listen: false).add(Session(endDate: DateTime.now(), activity: value));
+                      autofocus: true,
+                      onSubmitted: (String activityName) {
+                        Provider.of<SessionsModel>(context, listen: false).finishActivity(activityName);
                         Navigator.pop(context);
                       },
                       decoration: InputDecoration(
@@ -152,17 +154,51 @@ class _MyHomePageState extends State<MyHomePage> {
 
 class Session {
   final String activity;
+  final DateTime startDate;
   final DateTime endDate;
-  Session({required this.activity, required this.endDate});
+  Session({required this.activity, required this.startDate, required this.endDate});
+
+  // FIXME: prevent invalid states (endDate < startDate)
+  update({String? activity, DateTime? startDate, DateTime? endDate}) {
+    return Session(
+      activity: activity ?? this.activity,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+    );
+  }
 }
 
 class SessionsModel extends ChangeNotifier {
-  final List<Session> _sessions = [Session(activity: "yeet", endDate: DateTime.now())];
+  final List<Session> _sessions = [
+    Session(activity: "one", startDate: DateTime.utc(2025, 1, 1, 6, 15, 0), endDate: DateTime.utc(2025, 1, 1, 6, 25, 0)),
+    Session(activity: "two", startDate: DateTime.utc(2025, 1, 1, 6, 25, 0), endDate: DateTime.utc(2025, 1, 1, 6, 35, 0)),
+  ];
 
   UnmodifiableListView<Session> get sessions => UnmodifiableListView(_sessions);
 
-  void add(Session session) {
+  void _add(Session session) {
     _sessions.add(session);
+    notifyListeners();
+  }
+
+  void finishActivity(String activity) {
+    // FIXME: last is unsafe!
+    _add(Session(activity: activity, startDate: _sessions.last.endDate, endDate: DateTime.now()));
+  }
+
+  DateTime _withTimeOfDay(DateTime dateTime, TimeOfDay timeOfDay) {
+    // TODO: currently this drops the seconds and lower units. Is this desired?
+    return DateTime(dateTime.year, dateTime.month, dateTime.day, timeOfDay.hour, timeOfDay.minute);
+  }
+
+  void changeEndTime(int index, TimeOfDay time) {
+    // FIXME: what if index out of range?
+    // FIXME: what if new time is before the session's startDate? What if it is later than the next session's endDate?
+    final newEndDate = _withTimeOfDay(_sessions[index].endDate, time);
+    _sessions[index] = _sessions[index].update(endDate: newEndDate);
+    // Maintain the invariant that each session starts when the previous one ends.
+    if (index + 1 < _sessions.length)
+      _sessions[index + 1] = _sessions[index + 1].update(startDate: newEndDate);
     notifyListeners();
   }
 }
@@ -176,6 +212,13 @@ class _SessionList extends StatelessWidget {
       shrinkWrap: true,
       itemCount: sessionsModel.sessions.length,
       itemBuilder: (context, index) => ListTile(
+        leading: FilledButton(
+          child: Text(DateFormat.Hm().format(sessionsModel.sessions[index].endDate)),
+          onPressed: () => showTimePicker(
+            context: context,
+            initialTime: TimeOfDay.fromDateTime(sessionsModel.sessions[index].endDate),
+          ).then((time) { if (time != null) sessionsModel.changeEndTime(index, time); }),
+        ),
         title: Text(sessionsModel.sessions[index].activity),
       ),
     );
