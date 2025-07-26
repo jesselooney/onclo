@@ -34,7 +34,7 @@ class SessionList extends ChangeNotifier {
   /// Insert a SessionEnd into the list, creating a Session based on the startDate
   /// of the last Session preceeding the given endDate.
   /// Returns the newly created Session.
-  Session _insert(SessionEnd sessionEnd) {
+  Session insert(SessionEnd sessionEnd) {
     final lastIndex = _indexOfLastSessionBefore(sessionEnd.endDate);
 
     // We first compute the startDate of the new Session.
@@ -66,7 +66,7 @@ class SessionList extends ChangeNotifier {
 
   /// Remove the Session at index `index` and return it,
   /// or return null if `index` is out of range.
-  Session? _removeAt(int index) {
+  Session? removeAt(int index) {
     if (index < 0 || _sessions.length <= index) return null;
 
     final prevIndex = index - 1;
@@ -83,7 +83,7 @@ class SessionList extends ChangeNotifier {
   }
 
   Session endActivity(String activity) {
-    final newSession = _insert((activity: activity, endDate: DateTime.now()));
+    final newSession = insert((activity: activity, endDate: DateTime.now()));
     notifyListeners();
     return newSession;
   }
@@ -97,9 +97,9 @@ class SessionList extends ChangeNotifier {
     final sessionEnd = (activity: targetSession.activity, endDate: targetSession.endDate.atTimeOfDay(timeOfDay));
    
     // Remove the original Session.
-    _removeAt(index);
+    removeAt(index);
     // Add it back with a modified endDate.
-    _insert(sessionEnd);
+    insert(sessionEnd);
 
     notifyListeners();
 
