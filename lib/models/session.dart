@@ -1,4 +1,3 @@
-// FIXME: prevent invalid states (endDate < startDate)
 class Session {
   final String activity;
   final DateTime startDate;
@@ -7,7 +6,7 @@ class Session {
   Session._({required this.activity, required this.startDate, required this.endDate});
 
   static Session? create({required String activity, required DateTime startDate, required DateTime endDate}) {
-    if (startDate.compareTo(endDate) < 0)
+    if (startDate.compareTo(endDate) <= 0)
       return Session._(activity: activity, startDate: startDate, endDate: endDate);
   }
 

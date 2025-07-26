@@ -68,7 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     TextField(
                       autofocus: true,
                       onSubmitted: (String activityName) {
-                        Provider.of<SessionList>(context, listen: false).finishActivity(activityName);
+                        Provider.of<SessionList>(context, listen: false).endActivity(activityName);
                         Navigator.pop(context);
                       },
                       decoration: InputDecoration(
@@ -128,7 +128,7 @@ class _SessionListView extends StatelessWidget {
             initialTime: TimeOfDay.fromDateTime(sessionList.sessions[index].endDate),
           ).then((time) { if (time != null) sessionList.changeEndTime(index, time); }),
         ),
-        title: Text(sessionList.sessions[index].activity),
+        title: Text(sessionList.sessions[index].activity + sessionList.sessions[index].startDate.toString()),
       ),
     );
   }
