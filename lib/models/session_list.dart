@@ -6,14 +6,15 @@ import 'session.dart';
 
 typedef SessionEnd = ({String activity, DateTime endDate});
 
-// TODO: ensure we maintain the invariant that:
+// NOTE: This implementation is somewhat silly. We are storing full Sessions,
+// but really we could do everything in terms of SessionEnds, as that is what
+// the user interface presents. Then we can convert to Sessions for analysis if
+// necessary. The current implementation costs much complexity for only a potential
+// benefit elsewhere in the application.
+// NOTE: Instances must always maintain the following invariants:
 // 1. _sessions[i].endDate == _sessions[i + 1].startDate for all 0 <= i < _sessions.length - 1
 class SessionList extends ChangeNotifier {
-  /// TODO: remove these test initializations.
-  final List<Session> _sessions = [
-    Session.create(activity: "one", startDate: DateTime(2025, 1, 1, 6, 15, 0), endDate: DateTime(2025, 1, 1, 6, 25, 0))!,
-    Session.create(activity: "two", startDate: DateTime(2025, 1, 1, 6, 25, 0), endDate: DateTime(2025, 1, 1, 6, 35, 0))!,
-  ];
+  final List<Session> _sessions = [];
 
   UnmodifiableListView<Session> get sessions => UnmodifiableListView(_sessions);
 
@@ -89,21 +90,24 @@ class SessionList extends ChangeNotifier {
   }
 
   /// Modify a Session by changing the time of day at which it ends.
-  /// Returns false if the target index is out of range, true otherwise.
-  bool changeEndTime(int index, TimeOfDay timeOfDay) {
-    if (index < 0 || _sessions.length <= index) return false;
+  /// Returns the modified session, or null if the index is out of range. 
+  Session? changeEndTime(int index, TimeOfDay timeOfDay) {
+    if (index < 0 || _sessions.length <= index) return null;
 
     final targetSession = _sessions[index];
-    final sessionEnd = (activity: targetSession.activity, endDate: targetSession.endDate.atTimeOfDay(timeOfDay));
+    final modifiedSessionEnd = (activity: targetSession.activity, endDate: targetSession.endDate.atTimeOfDay(timeOfDay));
+
+    if (targetSession.endDate.compareTo(modifiedSessionEnd.endDate) == 0)
+      return targetSession;
    
     // Remove the original Session.
     removeAt(index);
     // Add it back with a modified endDate.
-    insert(sessionEnd);
+    final modifiedSession = insert(modifiedSessionEnd);
 
     notifyListeners();
 
-    return true;
+    return modifiedSession;
   }
 }
 
