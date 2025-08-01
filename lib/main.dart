@@ -3,14 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:animations/animations.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'models/session.dart';
-import 'models/session_list.dart';
+import 'extensions/date_time_extensions.dart';
+import 'database.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => SessionList(),
-      child: const MyApp(),
+    Provider<AppDatabase>(
+      create: (context) => AppDatabase(),
+      child: MyApp(),
+      dispose: (context, db) => db.close(),
     )
   );
 }
@@ -51,7 +52,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            _SessionListView()
+            _SessionsEndsView(),
           ],
         ),
       ),
@@ -67,8 +68,16 @@ class _MyHomePageState extends State<MyHomePage> {
                   children: [
                     TextField(
                       autofocus: true,
-                      onSubmitted: (String activityName) {
-                        Provider.of<SessionList>(context, listen: false).endActivity(activityName);
+                      onSubmitted: (String activity) {
+                        final db = Provider.of<AppDatabase>(context, listen: false);
+                        // TODO: Extract this query to DB class.
+                        db.into(db.sessionEnds).insert(
+                          SessionEndsCompanion.insert(
+                            endDate: DateTime.now(),
+                            activity: activity,
+                            note: '',
+                          )
+                        );
                         Navigator.pop(context);
                       },
                       decoration: InputDecoration(
@@ -112,24 +121,69 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class _SessionListView extends StatelessWidget {
+class _SessionsEndsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final sessionList = context.watch<SessionList>();
+    final db = Provider.of<AppDatabase>(context);
 
-    return ListView.builder(
-      shrinkWrap: true,
-      itemCount: sessionList.sessions.length,
-      itemBuilder: (context, index) => ListTile(
-        leading: FilledButton(
-          child: Text(DateFormat.Hm().format(sessionList.sessions[index].endDate)),
-          onPressed: () => showTimePicker(
-            context: context,
-            initialTime: TimeOfDay.fromDateTime(sessionList.sessions[index].endDate),
-          ).then((time) { if (time != null) sessionList.changeEndTime(index, time); }),
-        ),
-        title: Text(sessionList.sessions[index].activity + sessionList.sessions[index].startDate.toString()),
-      ),
+    return StreamBuilder(
+      initialData: [],
+      stream: db.watchSessionEnds,
+      builder: (context, snapshot) {
+        // TODO: correctly handle the case where there is no data
+        final sessionEnds = snapshot.requireData;
+
+        // TODO: is there a better way to build a ListView when the
+        // items already have their own IDs?
+        return ListView.builder(
+          shrinkWrap: true,
+          itemCount: sessionEnds.length,
+          itemBuilder: (context, index) {
+            final SessionEnd sessionEnd = sessionEnds[index];
+
+            return ListTile(
+              leading: FilledButton(
+                child: Text(DateFormat.Hm().format(sessionEnd.endDate)),
+                onPressed: () => showTimePicker(
+                  context: context,
+                  initialTime: TimeOfDay.fromDateTime(sessionEnd.endDate),
+                ).then((time) {
+                  if (time != null) {
+                    // TODO: extract this query to DB class
+                    final updatedSessionEnd = sessionEnd.copyWith(
+                      endDate: sessionEnd.endDate.atTimeOfDay(time),
+                    );
+                    db.update(db.sessionEnds).replace(updatedSessionEnd);
+                  }
+                }),
+              ),
+              title: Text(sessionEnd.activity),
+            );
+          },
+        );
+      }
     );
   }
 }
+
+//class _SessionListView extends StatelessWidget {
+//  @override
+//  Widget build(BuildContext context) {
+//    final sessionList = context.watch<SessionList>();
+//
+//    return ListView.builder(
+//      shrinkWrap: true,
+//      itemCount: sessionList.sessions.length,
+//      itemBuilder: (context, index) => ListTile(
+//        leading: FilledButton(
+//          child: Text(DateFormat.Hm().format(sessionList.sessions[index].endDate)),
+//          onPressed: () => showTimePicker(
+//            context: context,
+//            initialTime: TimeOfDay.fromDateTime(sessionList.sessions[index].endDate),
+//          ).then((time) { if (time != null) sessionList.changeEndTime(index, time); }),
+//        ),
+//        title: Text(sessionList.sessions[index].activity + sessionList.sessions[index].startDate.toString()),
+//      ),
+//    );
+//  }
+//}
