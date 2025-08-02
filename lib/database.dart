@@ -22,10 +22,12 @@ class AppDatabase extends _$AppDatabase {
   @override
   int get schemaVersion => 1;
 
+  /// Watches the sessionEnds in reverse order of endDate; the latest
+  /// sessionEnd is the first in the list.
   // TODO: what should happen when two sessions end at the same time?
   Stream<List<SessionEnd>> get watchSessionEnds => (
     select(sessionEnds)
-    ..orderBy([(s) => OrderingTerm(expression: s.endDate)])
+    ..orderBy([(s) => OrderingTerm(expression: s.endDate, mode: OrderingMode.desc)])
   ).watch();
 
   Future updateSessionEndTimeOfDay(SessionEnd sessionEnd, TimeOfDay newTimeOfDay) {

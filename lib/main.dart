@@ -132,7 +132,12 @@ class _SessionsEndsView extends StatelessWidget {
 
         // TODO: is there a better way to build a ListView when the
         // items already have their own IDs?
+        // TODO: it is maybe inefficient to rebuild the ListView every time
+        // anything changes. Plus, we are not actually taking advantage of the
+        // lazy-loading capabilities since we could precompute every widget from
+        // the SessionEnd list we have already.
         return ListView.builder(
+          reverse: true,
           shrinkWrap: true,
           itemCount: sessionEnds.length,
           itemBuilder: (context, index) {
