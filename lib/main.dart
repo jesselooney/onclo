@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'extensions/date_time_extensions.dart';
 import 'database.dart';
+import 'package:onclo_mobile/models/activity.dart';
 
 void main() {
   runApp(
@@ -68,13 +69,13 @@ class _MyHomePageState extends State<MyHomePage> {
                   children: [
                     TextField(
                       autofocus: true,
-                      onSubmitted: (String activity) {
+                      onSubmitted: (String activityString) {
                         final db = Provider.of<AppDatabase>(context, listen: false);
                         // TODO: Extract this query to DB class.
                         db.into(db.sessionEnds).insert(
                           SessionEndsCompanion.insert(
                             endDate: DateTime.now(),
-                            activity: activity,
+                            activity: Activity(activityString),
                             note: '',
                           )
                         );
@@ -150,6 +151,11 @@ class _SessionsEndsView extends StatelessWidget {
                 ).then((time) {
                   if (time != null) {
                     // TODO: extract this query to DB class
+                    // TODO: changing time should yield the nearest date
+                    // with that time of day (e.g. 01:00 -> 23:00 should
+                    // yield a datetime on the previous day). *Maybe* add
+                    // an option for moving activities further distances
+                    // or to an exact day and time.
                     final updatedSessionEnd = sessionEnd.copyWith(
                       endDate: sessionEnd.endDate.atTimeOfDay(time),
                     );
@@ -157,7 +163,7 @@ class _SessionsEndsView extends StatelessWidget {
                   }
                 }),
               ),
-              title: Text(sessionEnd.activity),
+              title: Text(sessionEnd.activity.name),
             );
           },
         );

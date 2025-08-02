@@ -1,13 +1,15 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:onclo_mobile/models/activity.dart';
+import 'package:onclo_mobile/converters/activity_converter.dart';
 
 part 'database.g.dart';
 
 class SessionEnds extends Table {
   IntColumn get id => integer().autoIncrement()();
   DateTimeColumn get endDate => dateTime()();
-  TextColumn get activity => text()();
+  TextColumn get activity => text().map(const ActivityConverter())();
   TextColumn get note => text()();
 }
 
