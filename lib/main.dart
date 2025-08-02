@@ -159,24 +159,3 @@ class _SessionsEndsView extends StatelessWidget {
   }
 }
 
-//class _SessionListView extends StatelessWidget {
-//  @override
-//  Widget build(BuildContext context) {
-//    final sessionList = context.watch<SessionList>();
-//
-//    return ListView.builder(
-//      shrinkWrap: true,
-//      itemCount: sessionList.sessions.length,
-//      itemBuilder: (context, index) => ListTile(
-//        leading: FilledButton(
-//          child: Text(DateFormat.Hm().format(sessionList.sessions[index].endDate)),
-//          onPressed: () => showTimePicker(
-//            context: context,
-//            initialTime: TimeOfDay.fromDateTime(sessionList.sessions[index].endDate),
-//          ).then((time) { if (time != null) sessionList.changeEndTime(index, time); }),
-//        ),
-//        title: Text(sessionList.sessions[index].activity + sessionList.sessions[index].startDate.toString()),
-//      ),
-//    );
-//  }
-//}
