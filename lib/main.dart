@@ -53,7 +53,9 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            _SessionsEndsView(),
+            Expanded(
+              child: _SessionsEndsView(),
+            ),
           ],
         ),
       ),
@@ -136,7 +138,10 @@ class _SessionsEndsView extends StatelessWidget {
         // anything changes. Plus, we are not actually taking advantage of the
         // lazy-loading capabilities since we could precompute every widget from
         // the SessionEnd list we have already.
-        return ListView.builder(
+        // TODO: Using separators doesn't really work since they are only placed
+        // between items, meaning we won't have one showing the day of the first
+        // day of items.
+        return ListView.separated(
           reverse: true,
           shrinkWrap: true,
           itemCount: sessionEnds.length,
@@ -156,6 +161,14 @@ class _SessionsEndsView extends StatelessWidget {
                 }),
               ),
               title: Text(sessionEnd.activity.name),
+            );
+          },
+          separatorBuilder: (context, index) {
+            final SessionEnd sessionEnd = sessionEnds[index];
+            // if (sameDay(sessionEnds[index], sessionEnds[index + 1]))
+            //     dontShowSeparator(); // still need to return a widget
+            return ListTile(
+              title: Text(sessionEnd.endDate.toString()),
             );
           },
         );
