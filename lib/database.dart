@@ -28,10 +28,8 @@ class AppDatabase extends _$AppDatabase {
     ..orderBy([(s) => OrderingTerm(expression: s.endDate)])
   ).watch();
 
-  // TODO: this should find the nearest date with the given time (allowing
-  // moving to the previous/next day).
   Future updateSessionEndTimeOfDay(SessionEnd sessionEnd, TimeOfDay newTimeOfDay) {
-    final newEndDate = sessionEnd.endDate.atTimeOfDay(newTimeOfDay);
+    final newEndDate = sessionEnd.endDate.nearestWithTimeOfDay(newTimeOfDay);
     final newSessionEnd = sessionEnd.copyWith(endDate: newEndDate);
     return update(sessionEnds).replace(newSessionEnd);
   }
