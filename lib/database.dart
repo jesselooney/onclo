@@ -3,6 +3,8 @@ import 'package:drift_flutter/drift_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:onclo_mobile/models/activity.dart';
 import 'package:onclo_mobile/converters/activity_converter.dart';
+import 'package:flutter/material.dart' show TimeOfDay;
+import 'package:onclo_mobile/extensions/date_time_extensions.dart';
 
 part 'database.g.dart';
 
@@ -25,6 +27,22 @@ class AppDatabase extends _$AppDatabase {
     select(sessionEnds)
     ..orderBy([(s) => OrderingTerm(expression: s.endDate)])
   ).watch();
+
+  // TODO: this should find the nearest date with the given time (allowing
+  // moving to the previous/next day).
+  Future updateSessionEndTimeOfDay(SessionEnd sessionEnd, TimeOfDay newTimeOfDay) {
+    final newEndDate = sessionEnd.endDate.atTimeOfDay(newTimeOfDay);
+    final newSessionEnd = sessionEnd.copyWith(endDate: newEndDate);
+    return update(sessionEnds).replace(newSessionEnd);
+  }
+
+  Future endSessionNow(Activity activity) {
+    return into(sessionEnds).insert(SessionEndsCompanion.insert(
+      endDate: DateTime.now(),
+      activity: activity,
+      note: '',
+    ));
+  }
 
   static QueryExecutor _openConnection() {
     return driftDatabase(

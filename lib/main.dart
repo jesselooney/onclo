@@ -70,15 +70,11 @@ class _MyHomePageState extends State<MyHomePage> {
                     TextField(
                       autofocus: true,
                       onSubmitted: (String activityString) {
-                        final db = Provider.of<AppDatabase>(context, listen: false);
-                        // TODO: Extract this query to DB class.
-                        db.into(db.sessionEnds).insert(
-                          SessionEndsCompanion.insert(
-                            endDate: DateTime.now(),
-                            activity: Activity(activityString),
-                            note: '',
-                          )
-                        );
+                        final activity = Activity(activityString);
+                        if (!activity.name.isEmpty) {
+                          final db = Provider.of<AppDatabase>(context, listen: false);
+                          db.endSessionNow(activity);
+                        }
                         Navigator.pop(context);
                       },
                       decoration: InputDecoration(
@@ -148,18 +144,9 @@ class _SessionsEndsView extends StatelessWidget {
                 onPressed: () => showTimePicker(
                   context: context,
                   initialTime: TimeOfDay.fromDateTime(sessionEnd.endDate),
-                ).then((time) {
-                  if (time != null) {
-                    // TODO: extract this query to DB class
-                    // TODO: changing time should yield the nearest date
-                    // with that time of day (e.g. 01:00 -> 23:00 should
-                    // yield a datetime on the previous day). *Maybe* add
-                    // an option for moving activities further distances
-                    // or to an exact day and time.
-                    final updatedSessionEnd = sessionEnd.copyWith(
-                      endDate: sessionEnd.endDate.atTimeOfDay(time),
-                    );
-                    db.update(db.sessionEnds).replace(updatedSessionEnd);
+                ).then((timeOfDay) {
+                  if (timeOfDay != null) {
+                    db.updateSessionEndTimeOfDay(sessionEnd, timeOfDay);
                   }
                 }),
               ),
