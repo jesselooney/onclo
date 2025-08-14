@@ -30,6 +30,17 @@ class AppDatabase extends _$AppDatabase {
     ..orderBy([(s) => OrderingTerm(expression: s.endDate, mode: OrderingMode.desc)])
   ).watch();
 
+  /// Watches the sessionEnds that end on a given day in reverse order
+  /// of endDate; the latest sessionEnd is the first in the list.
+  Stream<List<SessionEnd>> watchSessionEndsOnDay(DateTime day) {
+    final startOfDay = day.copyWith(hour: 0, minute: 0, second: 0, millisecond: 0, microsecond: 0);
+    final startOfNextDay = startOfDay.add(const Duration(days: 1));
+    return (select(sessionEnds)
+      ..where((s) => s.endDate.isBiggerOrEqualValue(startOfDay) & s.endDate.isSmallerThanValue(startOfNextDay))
+      ..orderBy([(s) => OrderingTerm(expression: s.endDate, mode: OrderingMode.desc)])
+    ).watch();
+  }
+
   Future updateSessionEndTimeOfDay(SessionEnd sessionEnd, TimeOfDay newTimeOfDay) {
     final newEndDate = sessionEnd.endDate.nearestWithTimeOfDay(newTimeOfDay);
     final newSessionEnd = sessionEnd.copyWith(endDate: newEndDate);
