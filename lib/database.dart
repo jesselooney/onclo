@@ -26,10 +26,11 @@ class AppDatabase extends _$AppDatabase {
   /// Watches the sessionEnds in reverse order of endDate; the latest
   /// sessionEnd is the first in the list.
   // TODO: what should happen when two sessions end at the same time?
-  Stream<List<SessionEnd>> get watchSessionEnds => (
-    select(sessionEnds)
-    ..orderBy([(s) => OrderingTerm(expression: s.endDate, mode: OrderingMode.desc)])
-  ).watch();
+  Stream<List<SessionEnd>> get watchSessionEnds =>
+      (select(sessionEnds)..orderBy([
+            (s) => OrderingTerm(expression: s.endDate, mode: OrderingMode.desc),
+          ]))
+          .watch();
 
   /// Watches the sessionEnds that end on a given day in reverse order
   /// of endDate; the latest sessionEnd is the first in the list.
@@ -37,9 +38,15 @@ class AppDatabase extends _$AppDatabase {
     final startOfDay = day.atStartOfDay;
     final startOfNextDay = startOfDay.add(const Duration(days: 1));
     return (select(sessionEnds)
-      ..where((s) => s.endDate.isBiggerOrEqualValue(startOfDay) & s.endDate.isSmallerThanValue(startOfNextDay))
-      ..orderBy([(s) => OrderingTerm(expression: s.endDate, mode: OrderingMode.desc)])
-    ).watch();
+          ..where(
+            (s) =>
+                s.endDate.isBiggerOrEqualValue(startOfDay) &
+                s.endDate.isSmallerThanValue(startOfNextDay),
+          )
+          ..orderBy([
+            (s) => OrderingTerm(expression: s.endDate, mode: OrderingMode.desc),
+          ]))
+        .watch();
   }
 
   Future<DateTime?> get earliestEndDate async {
@@ -49,27 +56,41 @@ class AppDatabase extends _$AppDatabase {
     return row.read(getEarliestEndDate);
   }
 
-  Future updateSessionEndTimeOfDay(SessionEnd sessionEnd, TimeOfDay newTimeOfDay) {
+  Future updateSessionEndTimeOfDay(
+    SessionEnd sessionEnd,
+    TimeOfDay newTimeOfDay,
+  ) {
     final newEndDate = sessionEnd.endDate.nearestWithTimeOfDay(newTimeOfDay);
     final newSessionEnd = sessionEnd.copyWith(endDate: newEndDate);
     return update(sessionEnds).replace(newSessionEnd);
   }
 
   Future endSessionNow(Activity activity) {
-    return into(sessionEnds).insert(SessionEndsCompanion.insert(
-      endDate: DateTime.now(),
-      activity: activity,
-      note: '',
-    ));
+    return into(sessionEnds).insert(
+      SessionEndsCompanion.insert(
+        endDate: DateTime.now(),
+        activity: activity,
+        note: '',
+      ),
+    );
   }
 
   Future<Session> getSessionFromSessionEnd(SessionEnd sessionEnd) async {
-    final priorSessionEnd = await (select(sessionEnds)
-      ..where((s) => s.endDate.isSmallerThanValue(sessionEnd.endDate))
-      ..orderBy([(s) => OrderingTerm(expression: s.endDate, mode: OrderingMode.desc)])
-      ..limit(1)).get();
+    final priorSessionEnd =
+        await (select(sessionEnds)
+              ..where((s) => s.endDate.isSmallerThanValue(sessionEnd.endDate))
+              ..orderBy([
+                (s) => OrderingTerm(
+                  expression: s.endDate,
+                  mode: OrderingMode.desc,
+                ),
+              ])
+              ..limit(1))
+            .get();
 
-    final startDate = priorSessionEnd.isEmpty ? sessionEnd.endDate : priorSessionEnd[0].endDate;
+    final startDate = priorSessionEnd.isEmpty
+        ? sessionEnd.endDate
+        : priorSessionEnd[0].endDate;
 
     return Session.fromSessionEnd(sessionEnd, startDate);
   }
@@ -78,9 +99,8 @@ class AppDatabase extends _$AppDatabase {
     return driftDatabase(
       name: 'app_database',
       native: const DriftNativeOptions(
-          databaseDirectory: getApplicationSupportDirectory,
-      )
+        databaseDirectory: getApplicationSupportDirectory,
+      ),
     );
   }
 }
-

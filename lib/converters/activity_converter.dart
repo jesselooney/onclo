@@ -16,4 +16,3 @@ class ActivityConverter extends TypeConverter<Activity, String> {
     return activity.name;
   }
 }
-

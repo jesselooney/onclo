@@ -27,8 +27,7 @@ extension AtTimeOfDay on DateTime {
     if (difference > twelveHours) {
       // This time of day on the previous day is closer.
       return newDate.subtract(oneDay);
-    }
-    else if (difference < -twelveHours) {
+    } else if (difference < -twelveHours) {
       // This time of day on the next day is closer.
       return newDate.add(oneDay);
     } else {
@@ -37,6 +36,12 @@ extension AtTimeOfDay on DateTime {
   }
 
   DateTime get atStartOfDay {
-    return this.copyWith(hour: 0, minute: 0, second: 0, millisecond: 0, microsecond: 0);
+    return this.copyWith(
+      hour: 0,
+      minute: 0,
+      second: 0,
+      millisecond: 0,
+      microsecond: 0,
+    );
   }
 }

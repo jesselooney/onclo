@@ -4,7 +4,9 @@ import 'package:onclo_mobile/models/activity.dart';
 void main() {
   group('Activity', () {
     test('constructor normalizes name', () {
-      final activity = Activity(' words    separated\nin\t weird-looking ways \n\t');
+      final activity = Activity(
+        ' words    separated\nin\t weird-looking ways \n\t',
+      );
       expect(activity.name, 'words separated in weird-looking ways');
     });
 
@@ -31,4 +33,3 @@ void main() {
     });
   });
 }
-

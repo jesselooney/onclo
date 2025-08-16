@@ -18,11 +18,12 @@ class Session {
     required this.note,
   });
 
-  Session.fromSessionEnd(SessionEnd sessionEnd, DateTime startDate) : this(
-    sessionEndId: sessionEnd.id,
-    startDate: startDate,
-    endDate: sessionEnd.endDate,
-    activity: sessionEnd.activity,
-    note: sessionEnd.note,
-  );
+  Session.fromSessionEnd(SessionEnd sessionEnd, DateTime startDate)
+    : this(
+        sessionEndId: sessionEnd.id,
+        startDate: startDate,
+        endDate: sessionEnd.endDate,
+        activity: sessionEnd.activity,
+        note: sessionEnd.note,
+      );
 }

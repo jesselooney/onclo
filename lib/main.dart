@@ -29,7 +29,10 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page', db: Provider.of<AppDatabase>(context)),
+      home: MyHomePage(
+        title: 'Flutter Demo Home Page',
+        db: Provider.of<AppDatabase>(context),
+      ),
     );
   }
 }
@@ -52,98 +55,114 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     // TODO: Ideally this value is reactive -> streambuilder?
-    future = this.widget.db.earliestEndDate.then((date) => (date ?? DateTime.now()).atStartOfDay );
+    future = this.widget.db.earliestEndDate.then(
+      (date) => (date ?? DateTime.now()).atStartOfDay,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-    future: future,
-    builder: (context, snapshot) => Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-        actions: 
-          snapshot.hasData ? [IconButton(
-            icon: const Icon(Icons.calendar_month),
-            onPressed: () async {
-              final DateTime? pickedDate = await showDatePicker(context: context, firstDate: snapshot.requireData, lastDate: DateTime.now());
-              if (pickedDate == null) return;
-              // WARN: This value is probably not always right.
-              final daysBetween = DateTime.now().difference(pickedDate).inDays;
-              itemScrollController.jumpTo(index: daysBetween);
-            },
-          )
-        ] : []
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Expanded(
-              child: snapshot.hasData ? DaysView(firstDate: snapshot.requireData, itemScrollController: itemScrollController) : Container(),
+      future: future,
+      builder: (context, snapshot) => Scaffold(
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          title: Text(widget.title),
+          actions: snapshot.hasData
+              ? [
+                  IconButton(
+                    icon: const Icon(Icons.calendar_month),
+                    onPressed: () async {
+                      final DateTime? pickedDate = await showDatePicker(
+                        context: context,
+                        firstDate: snapshot.requireData,
+                        lastDate: DateTime.now(),
+                      );
+                      if (pickedDate == null) return;
+                      // WARN: This value is probably not always right.
+                      final daysBetween = DateTime.now()
+                          .difference(pickedDate)
+                          .inDays;
+                      itemScrollController.jumpTo(index: daysBetween);
+                    },
+                  ),
+                ]
+              : [],
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Expanded(
+                child: snapshot.hasData
+                    ? DaysView(
+                        firstDate: snapshot.requireData,
+                        itemScrollController: itemScrollController,
+                      )
+                    : Container(),
+              ),
+            ],
+          ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            showModalBottomSheet<void>(
+              context: context,
+              isScrollControlled: true,
+              builder: (BuildContext context) => FractionallySizedBox(
+                heightFactor: 0.9,
+                child: Container(
+                  padding: EdgeInsets.all(16.0),
+                  child: Center(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        TextField(
+                          autofocus: true,
+                          onSubmitted: (String activityString) {
+                            final activity = Activity(activityString);
+                            if (!activity.name.isEmpty) {
+                              final db = Provider.of<AppDatabase>(
+                                context,
+                                listen: false,
+                              );
+                              db.endSessionNow(activity);
+                            }
+                            Navigator.pop(context);
+                          },
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            hintText: "Enter an activity",
+                          ),
+                        ),
+                        ListView(
+                          shrinkWrap: true,
+                          children: [
+                            ListTile(title: const Text("option one")),
+                            ListTile(title: const Text("option two")),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+          tooltip: 'Add Session',
+          child: const Icon(Icons.add),
+        ),
+        bottomNavigationBar: NavigationBar(
+          destinations: const <Widget>[
+            NavigationDestination(icon: Icon(Icons.home), label: "Track Time"),
+            NavigationDestination(
+              icon: Icon(Icons.notifications_sharp),
+              label: "Analyze Time",
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showModalBottomSheet<void>(
-            context: context,
-            isScrollControlled: true,
-            builder: (BuildContext context) => FractionallySizedBox(
-              heightFactor: 0.9,
-              child: Container(
-                padding: EdgeInsets.all(16.0),
-                child: Center(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    TextField(
-                      autofocus: true,
-                      onSubmitted: (String activityString) {
-                        final activity = Activity(activityString);
-                        if (!activity.name.isEmpty) {
-                          final db = Provider.of<AppDatabase>(
-                            context,
-                            listen: false,
-                          );
-                          db.endSessionNow(activity);
-                        }
-                        Navigator.pop(context);
-                      },
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: "Enter an activity",
-                      ),
-                    ),
-                    ListView(
-                      shrinkWrap: true,
-                      children: [
-                        ListTile(title: const Text("option one")),
-                        ListTile(title: const Text("option two")),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              ),
-            ),
-          );
-        },
-        tooltip: 'Add Session',
-        child: const Icon(Icons.add),
-      ),
-      bottomNavigationBar: NavigationBar(
-        destinations: const <Widget>[
-          NavigationDestination(icon: Icon(Icons.home), label: "Track Time"),
-          NavigationDestination(
-            icon: Icon(Icons.notifications_sharp),
-            label: "Analyze Time",
-          ),
-        ],
-      ),
-    ));
+    );
   }
 }
 
@@ -151,7 +170,11 @@ class DaysView extends StatelessWidget {
   final DateTime firstDate;
   final ItemScrollController? itemScrollController;
 
-  const DaysView({super.key, required this.firstDate, this.itemScrollController});
+  const DaysView({
+    super.key,
+    required this.firstDate,
+    this.itemScrollController,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -168,7 +191,10 @@ class DaysView extends StatelessWidget {
         // TODO: Make this safe against daylight savings. Days shorter or
         // longer than 24 hours might be skipped or double-rendered using this
         // method.
-        return DayView(db: db, day: today.subtract(Duration(days: index)));
+        return DayView(
+          db: db,
+          day: today.subtract(Duration(days: index)),
+        );
       },
     );
   }
@@ -236,7 +262,13 @@ class TextFieldDialog extends StatefulWidget {
   final bool autofocus;
   final bool autoselect;
 
-  const TextFieldDialog({super.key, required this.title, this.initialText = '', this.autofocus = false, this.autoselect = false});
+  const TextFieldDialog({
+    super.key,
+    required this.title,
+    this.initialText = '',
+    this.autofocus = false,
+    this.autoselect = false,
+  });
 
   @override
   State<TextFieldDialog> createState() => _TextFieldDialogState();
@@ -250,7 +282,10 @@ class _TextFieldDialogState extends State<TextFieldDialog> {
     super.initState();
     controller.text = this.widget.initialText;
     if (this.widget.autoselect) {
-      controller.selection = TextSelection(baseOffset: 0, extentOffset: controller.text.length);
+      controller.selection = TextSelection(
+        baseOffset: 0,
+        extentOffset: controller.text.length,
+      );
     }
   }
 
@@ -284,11 +319,10 @@ class _TextFieldDialogState extends State<TextFieldDialog> {
             Navigator.pop(context, controller.text);
           },
         ),
-      ]
+      ],
     );
   }
 }
-
 
 class SessionView extends StatelessWidget {
   final SessionEnd sessionEnd;
@@ -305,9 +339,17 @@ class SessionView extends StatelessWidget {
       confirmDismiss: (direction) async {
         if (direction == DismissDirection.endToStart) {
           // WARN: showDialog is not type safe.
-          final String? newNote = await showDialog(context: context, builder: (context) {
-            return TextFieldDialog(title: 'New session note', initialText: sessionEnd.note, autofocus: true, autoselect: true);
-          });
+          final String? newNote = await showDialog(
+            context: context,
+            builder: (context) {
+              return TextFieldDialog(
+                title: 'New session note',
+                initialText: sessionEnd.note,
+                autofocus: true,
+                autoselect: true,
+              );
+            },
+          );
 
           if (newNote != null) {
             final newSessionEnd = sessionEnd.copyWith(note: newNote);
@@ -335,9 +377,9 @@ class SessionView extends StatelessWidget {
                     Navigator.pop(context, true);
                   },
                 ),
-              ]
+              ],
             );
-          }
+          },
         );
       },
 
@@ -382,10 +424,15 @@ class SessionView extends StatelessWidget {
         title: Text.rich(
           TextSpan(
             text: sessionEnd.activity.name,
-            children: sessionEnd.note.isEmpty ? [] : [
-              TextSpan(text: ' • '),
-              TextSpan(text: sessionEnd.note, style: TextStyle(fontStyle: FontStyle.italic)),
-            ],
+            children: sessionEnd.note.isEmpty
+                ? []
+                : [
+                    TextSpan(text: ' • '),
+                    TextSpan(
+                      text: sessionEnd.note,
+                      style: TextStyle(fontStyle: FontStyle.italic),
+                    ),
+                  ],
           ),
           overflow: TextOverflow.ellipsis,
         ),
@@ -395,20 +442,31 @@ class SessionView extends StatelessWidget {
           showModalBottomSheet<void>(
             context: context,
             isScrollControlled: true,
-            builder: (BuildContext context) => SessionDetailView(session: session),
+            builder: (BuildContext context) =>
+                SessionDetailView(session: session),
           );
         },
         onLongPress: () async {
           // WARN: showDialog is not type safe.
-          final String? newActivityName = await showDialog(context: context, builder: (context) {
-            return TextFieldDialog(title: 'Edit activity', initialText: sessionEnd.activity.name, autofocus: true, autoselect: true);
-          });
+          final String? newActivityName = await showDialog(
+            context: context,
+            builder: (context) {
+              return TextFieldDialog(
+                title: 'Edit activity',
+                initialText: sessionEnd.activity.name,
+                autofocus: true,
+                autoselect: true,
+              );
+            },
+          );
 
           if (newActivityName != null) {
-            final newSessionEnd = sessionEnd.copyWith(activity: Activity(newActivityName));
+            final newSessionEnd = sessionEnd.copyWith(
+              activity: Activity(newActivityName),
+            );
             db.update(db.sessionEnds).replace(newSessionEnd);
           }
-        }
+        },
       ),
     );
   }
@@ -435,12 +493,22 @@ class SessionDetailView extends StatelessWidget {
                 this.session.activity.name,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
+              Text(this.session.note),
               Text(
-                this.session.note,
+                "start: " +
+                    DateFormat(
+                      "MMM d, yyyy 'at' HH:mm",
+                    ).format(this.session.startDate),
               ),
-              Text("start: " + DateFormat("MMM d, yyyy 'at' HH:mm").format(this.session.startDate)),
-              Text("end: " + DateFormat("MMM d, yyyy 'at' HH:mm").format(this.session.endDate)),
-              Text("${this.session.duration.inHours.remainder(24)}h${this.session.duration.inMinutes.remainder(60)}m"),
+              Text(
+                "end: " +
+                    DateFormat(
+                      "MMM d, yyyy 'at' HH:mm",
+                    ).format(this.session.endDate),
+              ),
+              Text(
+                "${this.session.duration.inHours.remainder(24)}h${this.session.duration.inMinutes.remainder(60)}m",
+              ),
             ],
           ),
         ),
