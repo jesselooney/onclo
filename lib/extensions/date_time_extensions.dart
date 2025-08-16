@@ -35,4 +35,8 @@ extension AtTimeOfDay on DateTime {
       return newDate;
     }
   }
+
+  DateTime get atStartOfDay {
+    return this.copyWith(hour: 0, minute: 0, second: 0, millisecond: 0, microsecond: 0);
+  }
 }

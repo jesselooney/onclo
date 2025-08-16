@@ -5,6 +5,7 @@ import 'package:onclo_mobile/models/activity.dart';
 import 'package:onclo_mobile/converters/activity_converter.dart';
 import 'package:flutter/material.dart' show TimeOfDay;
 import 'package:onclo_mobile/extensions/date_time_extensions.dart';
+import 'package:onclo_mobile/models/session.dart';
 
 part 'database.g.dart';
 
@@ -33,12 +34,19 @@ class AppDatabase extends _$AppDatabase {
   /// Watches the sessionEnds that end on a given day in reverse order
   /// of endDate; the latest sessionEnd is the first in the list.
   Stream<List<SessionEnd>> watchSessionEndsOnDay(DateTime day) {
-    final startOfDay = day.copyWith(hour: 0, minute: 0, second: 0, millisecond: 0, microsecond: 0);
+    final startOfDay = day.atStartOfDay;
     final startOfNextDay = startOfDay.add(const Duration(days: 1));
     return (select(sessionEnds)
       ..where((s) => s.endDate.isBiggerOrEqualValue(startOfDay) & s.endDate.isSmallerThanValue(startOfNextDay))
       ..orderBy([(s) => OrderingTerm(expression: s.endDate, mode: OrderingMode.desc)])
     ).watch();
+  }
+
+  Future<DateTime?> get earliestEndDate async {
+    final Expression<DateTime> getEarliestEndDate = sessionEnds.endDate.min();
+    final query = selectOnly(sessionEnds)..addColumns([getEarliestEndDate]);
+    final row = await query.getSingle();
+    return row.read(getEarliestEndDate);
   }
 
   Future updateSessionEndTimeOfDay(SessionEnd sessionEnd, TimeOfDay newTimeOfDay) {
@@ -53,6 +61,17 @@ class AppDatabase extends _$AppDatabase {
       activity: activity,
       note: '',
     ));
+  }
+
+  Future<Session> getSessionFromSessionEnd(SessionEnd sessionEnd) async {
+    final priorSessionEnd = await (select(sessionEnds)
+      ..where((s) => s.endDate.isSmallerThanValue(sessionEnd.endDate))
+      ..orderBy([(s) => OrderingTerm(expression: s.endDate, mode: OrderingMode.desc)])
+      ..limit(1)).get();
+
+    final startDate = priorSessionEnd.isEmpty ? sessionEnd.endDate : priorSessionEnd[0].endDate;
+
+    return Session.fromSessionEnd(sessionEnd, startDate);
   }
 
   static QueryExecutor _openConnection() {

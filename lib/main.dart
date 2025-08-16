@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'extensions/date_time_extensions.dart';
 import 'database.dart';
 import 'package:onclo_mobile/models/activity.dart';
+import 'package:onclo_mobile/models/session.dart';
 
 void main() {
   runApp(
@@ -66,8 +67,11 @@ class _MyHomePageState extends State<MyHomePage> {
             isScrollControlled: true,
             builder: (BuildContext context) => FractionallySizedBox(
               heightFactor: 0.9,
-              child: Center(
+              child: Container(
+                padding: EdgeInsets.all(16.0),
+                child: Center(
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     TextField(
                       autofocus: true,
@@ -84,22 +88,19 @@ class _MyHomePageState extends State<MyHomePage> {
                       },
                       decoration: InputDecoration(
                         border: OutlineInputBorder(),
-                        hintText: "search me",
+                        hintText: "Enter an activity",
                       ),
                     ),
                     ListView(
                       shrinkWrap: true,
                       children: [
-                        Container(child: const Text("option one")),
-                        Container(child: const Text("option two")),
+                        ListTile(title: const Text("option one")),
+                        ListTile(title: const Text("option two")),
                       ],
-                    ),
-                    ElevatedButton(
-                      child: const Text("close"),
-                      onPressed: () => Navigator.pop(context),
                     ),
                   ],
                 ),
+              ),
               ),
             ),
           );
@@ -124,15 +125,17 @@ class DaysView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final db = Provider.of<AppDatabase>(context);
-    final today = DateTime.now();
+    final today = DateTime.now().atStartOfDay;
 
-    // TODO: compute dynamically
-    final itemCount = 100;
-
+    // TODO: Compute an itemCount to help optimize ListView.builder. Though,
+    // this might require async and rerendering of the ListView so maybe not
+    // worth it.
     return ListView.builder(
       reverse: true,
-      itemCount: itemCount,
       itemBuilder: (context, index) {
+        // TODO: Make this safe against daylight savings. Days shorter or
+        // longer than 24 hours might be skipped or double-rendered using this
+        // method.
         return DayView(db: db, day: today.subtract(Duration(days: index)));
       }
     );
@@ -170,15 +173,11 @@ class _DayViewState extends State<DayView> {
       initialData: [],
       stream: sessionEndsStream,
       builder: (context, snapshot) {
-        if (!snapshot.hasData || snapshot.requireData.isEmpty) {
-          return Column(children: []);
-        }
-
-        final sessionEnds = snapshot.requireData;
+        final sessionEnds = snapshot.data ?? [];
 
         return Column(
           children: [
-            ListTile(title: Text(this.widget.day.toString())),
+            ListTile(title: Text(DateFormat.yMMMd().format(this.widget.day))),
             ListView.builder(
               reverse: true,
               shrinkWrap: true,
@@ -319,7 +318,7 @@ class SessionView extends StatelessWidget {
         child: Align(
           alignment: Alignment.centerLeft,
           child: Padding(
-            padding: EdgeInsets.all(16.0),
+            padding: EdgeInsets.only(left: 16.0),
             child: Icon(Icons.delete, color: Colors.white),
           ),
         ),
@@ -329,7 +328,7 @@ class SessionView extends StatelessWidget {
         child: Align(
           alignment: Alignment.centerRight,
           child: Padding(
-            padding: EdgeInsets.all(16.0),
+            padding: EdgeInsets.only(right: 16.0),
             child: Icon(Icons.edit, color: Colors.white),
           ),
         ),
@@ -348,8 +347,71 @@ class SessionView extends StatelessWidget {
                 }
               }),
         ),
-        title: Text(sessionEnd.activity.name),
-        trailing: Text(sessionEnd.note),
+        title: Text.rich(
+          TextSpan(
+            text: sessionEnd.activity.name,
+            children: sessionEnd.note.isEmpty ? [] : [
+              TextSpan(text: ' • '),
+              TextSpan(text: sessionEnd.note, style: TextStyle(fontStyle: FontStyle.italic)),
+            ],
+          ),
+          overflow: TextOverflow.ellipsis,
+        ),
+        onTap: () async {
+          final session = await db.getSessionFromSessionEnd(sessionEnd);
+
+          showModalBottomSheet<void>(
+            context: context,
+            isScrollControlled: true,
+            builder: (BuildContext context) => SessionDetailView(session: session),
+          );
+        },
+        onLongPress: () async {
+          // WARN: showDialog is not type safe.
+          final String? newActivityName = await showDialog(context: context, builder: (context) {
+            return TextFieldDialog(title: 'Edit activity', initialText: sessionEnd.activity.name, autofocus: true, autoselect: true);
+          });
+
+          if (newActivityName != null) {
+            final newSessionEnd = sessionEnd.copyWith(activity: Activity(newActivityName));
+            db.update(db.sessionEnds).replace(newSessionEnd);
+          }
+        }
+      ),
+    );
+  }
+}
+
+class SessionDetailView extends StatelessWidget {
+  final Session session;
+
+  const SessionDetailView({super.key, required this.session});
+
+  @override
+  Widget build(BuildContext context) {
+    // TODO: Extract this modal bottom sheet design pattern into a generic component
+    return FractionallySizedBox(
+      heightFactor: 0.6,
+      child: Container(
+        padding: EdgeInsets.all(16.0),
+        child: Align(
+          alignment: Alignment.topLeft,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                this.session.activity.name,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              Text(
+                this.session.note,
+              ),
+              Text("start: " + DateFormat("MMM d, yyyy 'at' HH:mm").format(this.session.startDate)),
+              Text("end: " + DateFormat("MMM d, yyyy 'at' HH:mm").format(this.session.endDate)),
+              Text("${this.session.duration.inHours.remainder(24)}h${this.session.duration.inMinutes.remainder(60)}m"),
+            ],
+          ),
+        ),
       ),
     );
   }
