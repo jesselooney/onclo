@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:flutter/material.dart';
 import 'package:animations/animations.dart';
 import 'package:intl/intl.dart';
@@ -28,34 +29,59 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'Flutter Demo Home Page', db: Provider.of<AppDatabase>(context)),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+  const MyHomePage({super.key, required this.title, required this.db});
 
   final String title;
+  final AppDatabase db;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final ItemScrollController itemScrollController = ItemScrollController();
+  late final Future<DateTime> future;
+
+  @override
+  void initState() {
+    super.initState();
+    // TODO: Ideally this value is reactive -> streambuilder?
+    future = this.widget.db.earliestEndDate.then((date) => (date ?? DateTime.now()).atStartOfDay );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return FutureBuilder(
+    future: future,
+    builder: (context, snapshot) => Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
+        actions: 
+          snapshot.hasData ? [IconButton(
+            icon: const Icon(Icons.calendar_month),
+            onPressed: () async {
+              final DateTime? pickedDate = await showDatePicker(context: context, firstDate: snapshot.requireData, lastDate: DateTime.now());
+              if (pickedDate == null) return;
+              // WARN: This value is probably not always right.
+              final daysBetween = DateTime.now().difference(pickedDate).inDays;
+              itemScrollController.jumpTo(index: daysBetween);
+            },
+          )
+        ] : []
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Expanded(
-              child: DaysView(),
+              child: snapshot.hasData ? DaysView(firstDate: snapshot.requireData, itemScrollController: itemScrollController) : Container(),
             ),
           ],
         ),
@@ -117,27 +143,33 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
-    );
+    ));
   }
 }
 
 class DaysView extends StatelessWidget {
+  final DateTime firstDate;
+  final ItemScrollController? itemScrollController;
+
+  const DaysView({super.key, required this.firstDate, this.itemScrollController});
+
   @override
   Widget build(BuildContext context) {
     final db = Provider.of<AppDatabase>(context);
     final today = DateTime.now().atStartOfDay;
+    // TODO: Make this safe against time shenanigans.
+    final itemCount = today.difference(firstDate).inDays + 1;
 
-    // TODO: Compute an itemCount to help optimize ListView.builder. Though,
-    // this might require async and rerendering of the ListView so maybe not
-    // worth it.
-    return ListView.builder(
+    return ScrollablePositionedList.builder(
       reverse: true,
+      itemCount: itemCount,
+      itemScrollController: itemScrollController,
       itemBuilder: (context, index) {
         // TODO: Make this safe against daylight savings. Days shorter or
         // longer than 24 hours might be skipped or double-rendered using this
         // method.
         return DayView(db: db, day: today.subtract(Duration(days: index)));
-      }
+      },
     );
   }
 }
