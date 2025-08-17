@@ -49,11 +49,13 @@ class AppDatabase extends _$AppDatabase {
         .watch();
   }
 
-  Future<DateTime?> get earliestEndDate async {
-    final Expression<DateTime> getEarliestEndDate = sessionEnds.endDate.min();
-    final query = selectOnly(sessionEnds)..addColumns([getEarliestEndDate]);
-    final row = await query.getSingle();
-    return row.read(getEarliestEndDate);
+  // WARN: what happens when table is empty?
+  Stream<DateTime?> watchFirstEndDate() {
+    final Expression<DateTime> earliestEndDate = sessionEnds.endDate.min();
+    final rowStream = (selectOnly(
+      sessionEnds,
+    )..addColumns([earliestEndDate])).watchSingle();
+    return rowStream.map((row) => row.read(earliestEndDate));
   }
 
   Future updateSessionEndTimeOfDay(

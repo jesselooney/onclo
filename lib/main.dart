@@ -20,54 +20,54 @@ class App extends StatelessWidget {
   const App({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Onclo (Alpha)',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: TrackingPage(db: Provider.of<AppDatabase>(context)),
-    );
-  }
+  Widget build(BuildContext context) => MaterialApp(
+    title: 'Onclo (Alpha)',
+    theme: ThemeData(
+      colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+    ),
+    home: TrackingPage(db: Provider.of<AppDatabase>(context)),
+  );
 }
 
 class TrackingPage extends StatefulWidget {
-  const TrackingPage({super.key, required this.db});
-
   final AppDatabase db;
+
+  const TrackingPage({super.key, required this.db});
 
   @override
   State<TrackingPage> createState() => _TrackingPageState();
 }
 
 class _TrackingPageState extends State<TrackingPage> {
-  final ItemScrollController itemScrollController = ItemScrollController();
-  late final Future<DateTime> firstDateFuture;
+  final ItemScrollController scrollController = ItemScrollController();
+  final DateTime defaultFirstDay = DateTime.now().atStartOfDay;
+  late final Stream<DateTime> firstDayStream;
 
   @override
   void initState() {
     super.initState();
-    // TODO: Ideally this value is reactive -> streambuilder?
-    firstDateFuture = this.widget.db.earliestEndDate.then(
-      (date) => (date ?? DateTime.now()).atStartOfDay,
+    firstDayStream = widget.db.watchFirstEndDate().map(
+      (firstEndDate) => (firstEndDate ?? defaultFirstDay).atStartOfDay,
     );
   }
 
-  Widget buildJumpToDayAction(
-    DateTime firstDate,
-    ItemScrollController itemScrollController,
-  ) => IconButton(
+  Widget buildJumpToDayAction({required DateTime firstDay}) => IconButton(
     icon: const Icon(Icons.calendar_month),
     onPressed: () async {
       final DateTime? pickedDate = await showDatePicker(
         context: context,
-        firstDate: firstDate,
+        firstDate: firstDay,
         lastDate: DateTime.now(),
       );
+
+      // If the user canceled the dialog, do nothing.
       if (pickedDate == null) return;
-      // WARN: This value is probably not always right.
+
+      // Use the number of days between now and the desired date as the index
+      // to jump to. Due to DateTime shenanigans, we may get the wrong number
+      // of days, but it will be close enough.
       final daysBetween = DateTime.now().difference(pickedDate).inDays;
-      itemScrollController.jumpTo(index: daysBetween);
+      scrollController.jumpTo(index: daysBetween);
     },
   );
 
@@ -120,7 +120,7 @@ class _TrackingPageState extends State<TrackingPage> {
     child: const Icon(Icons.add),
   );
 
-  Widget buildNavigationBar(BuildContext context) => NavigationBar(
+  Widget buildNavigationBar() => NavigationBar(
     destinations: [
       NavigationDestination(icon: Icon(Icons.punch_clock), label: "Track Time"),
       NavigationDestination(icon: Icon(Icons.bar_chart), label: "Analyze Time"),
@@ -128,39 +128,33 @@ class _TrackingPageState extends State<TrackingPage> {
   );
 
   @override
-  Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: firstDateFuture,
-      builder: (context, snapshot) => Scaffold(
-        appBar: AppBar(
-          title: Text('Track Time'),
-          actions: snapshot.hasData
-              ? [
-                  buildJumpToDayAction(
-                    snapshot.requireData,
-                    itemScrollController,
-                  ),
-                ]
-              : [],
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Expanded(
-                child: snapshot.hasData
-                    ? DaysView(
-                        firstDate: snapshot.requireData,
-                        itemScrollController: itemScrollController,
-                      )
-                    : Container(),
-              ),
-            ],
-          ),
-        ),
-        floatingActionButton: buildFab(),
-        bottomNavigationBar: buildNavigationBar(context),
+  Widget build(BuildContext context) => StreamBuilder(
+    initialData: defaultFirstDay,
+    stream: firstDayStream,
+    builder: (context, snapshot) => Scaffold(
+      appBar: AppBar(
+        title: Text('Track Time'),
+        actions: snapshot.hasData
+            ? [buildJumpToDayAction(firstDay: snapshot.requireData)]
+            : [],
       ),
-    );
-  }
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Expanded(
+              child: snapshot.hasData
+                  ? DaysView(
+                      firstDate: snapshot.requireData,
+                      itemScrollController: scrollController,
+                    )
+                  : Container(),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: buildFab(),
+      bottomNavigationBar: buildNavigationBar(),
+    ),
+  );
 }
