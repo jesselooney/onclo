@@ -1,6 +1,7 @@
-import '../models/session.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
+import 'package:onclo_mobile/models/models.dart';
 
 class SessionDetailView extends StatelessWidget {
   final Session session;

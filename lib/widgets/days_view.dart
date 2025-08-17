@@ -1,9 +1,11 @@
-import '../database.dart';
-import 'day_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../extensions/date_time_extensions.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+
+import 'package:onclo_mobile/database.dart';
+import 'package:onclo_mobile/extensions/extensions.dart';
+
+import 'day_view.dart';
 
 class DaysView extends StatelessWidget {
   final DateTime firstDate;
