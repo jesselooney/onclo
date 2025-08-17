@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
-import 'package:onclo_mobile/database.dart';
-import 'package:onclo_mobile/extensions/extensions.dart';
-import 'package:onclo_mobile/models/models.dart';
-import 'package:onclo_mobile/widgets/widgets.dart';
+import 'package:onclo/database.dart';
+import 'package:onclo/extensions/extensions.dart';
+import 'package:onclo/models/models.dart';
+import 'package:onclo/widgets/widgets.dart';
 
 class TrackingPage extends StatefulWidget {
   final AppDatabase db;

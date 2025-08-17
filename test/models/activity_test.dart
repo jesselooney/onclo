@@ -1,5 +1,6 @@
 import 'package:test/test.dart';
-import 'package:onclo_mobile/models/activity.dart';
+
+import 'package:onclo/models/activity.dart';
 
 void main() {
   group('Activity', () {

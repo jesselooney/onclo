@@ -1,5 +1,5 @@
-export 'activity_picker.dart';
-export 'days_view.dart';
-export 'day_view.dart';
-export 'session_detail_view.dart';
-export 'session_view.dart';
+export 'package:onclo/widgets/activity_picker.dart';
+export 'package:onclo/widgets/days_view.dart';
+export 'package:onclo/widgets/day_view.dart';
+export 'package:onclo/widgets/session_detail_view.dart';
+export 'package:onclo/widgets/session_view.dart';

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:onclo_mobile/database.dart';
-import 'package:onclo_mobile/pages/pages.dart';
+import 'package:onclo/database.dart';
+import 'package:onclo/pages/pages.dart';
 
 void main() {
   runApp(

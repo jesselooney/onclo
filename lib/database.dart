@@ -1,11 +1,11 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:onclo_mobile/models/activity.dart';
-import 'package:onclo_mobile/converters/activity_converter.dart';
 import 'package:flutter/material.dart' show TimeOfDay;
-import 'package:onclo_mobile/extensions/date_time_extensions.dart';
-import 'package:onclo_mobile/models/session.dart';
+import 'package:path_provider/path_provider.dart';
+
+import 'package:onclo/converters/converters.dart';
+import 'package:onclo/extensions/extensions.dart';
+import 'package:onclo/models/models.dart';
 
 part 'database.g.dart';
 

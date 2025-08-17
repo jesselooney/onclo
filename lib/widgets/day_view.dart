@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import 'package:onclo_mobile/database.dart';
-
-import 'session_view.dart';
+import 'package:onclo/database.dart';
+import 'package:onclo/widgets/session_view.dart';
 
 class DayView extends StatefulWidget {
   final AppDatabase db;

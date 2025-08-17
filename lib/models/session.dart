@@ -1,6 +1,5 @@
-import 'package:onclo_mobile/database.dart';
-
-import 'activity.dart';
+import 'package:onclo/database.dart';
+import 'package:onclo/models/activity.dart';
 
 class Session {
   final int sessionEndId;

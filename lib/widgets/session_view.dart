@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
-import 'package:onclo_mobile/database.dart';
-import 'package:onclo_mobile/models/models.dart';
-
-import 'session_detail_view.dart';
-import 'text_field_dialog.dart';
+import 'package:onclo/database.dart';
+import 'package:onclo/models/models.dart';
+import 'package:onclo/widgets/session_detail_view.dart';
+import 'package:onclo/widgets/text_field_dialog.dart';
 
 class SessionView extends StatelessWidget {
   final SessionEnd sessionEnd;

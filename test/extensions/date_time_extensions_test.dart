@@ -1,6 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:test/test.dart';
-import 'package:onclo_mobile/extensions/date_time_extensions.dart';
-import 'package:flutter/material.dart' show TimeOfDay;
+
+import 'package:onclo/extensions/date_time_extensions.dart';
 
 void main() {
   group('DateTime.nearestWithTimeOfDay() returns', () {

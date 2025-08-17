@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:drift/drift.dart';
 
-import 'package:onclo_mobile/models/models.dart';
+import 'package:onclo/models/models.dart';
 
 class ActivityConverter extends TypeConverter<Activity, String> {
   const ActivityConverter();

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:onclo_mobile/database.dart';
-import 'package:onclo_mobile/models/models.dart';
+import 'package:onclo/database.dart';
+import 'package:onclo/models/models.dart';
 
 class ActivitySelector extends StatelessWidget {
   @override
