@@ -50,20 +50,7 @@ class _TrackingPageState extends State<TrackingPage> {
 
   Widget buildFab() => FloatingActionButton(
     onPressed: () async {
-      // TODO: extract this as a custom method for the ActivitySelector(Modal),
-      // whose return type is thus safe.
-      final Activity? activity = await showModalBottomSheet<Activity?>(
-        context: context,
-        isScrollControlled: true,
-        builder: (BuildContext context) => FractionallySizedBox(
-          heightFactor: 0.9,
-          child: Container(
-            padding: EdgeInsets.all(16.0),
-            child: ActivitySelector(),
-          ),
-        ),
-      );
-
+      final activity = await showActivityPicker(context: context);
       if (activity != null) widget.db.endSessionNow(activity);
     },
     tooltip: 'Add Session',
