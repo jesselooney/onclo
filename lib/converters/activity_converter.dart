@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 
 import 'package:onclo/models/models.dart';
 
+/// A Drift [TypeConverter] for the [Activity] class.
 class ActivityConverter extends TypeConverter<Activity, String> {
   const ActivityConverter();
 
