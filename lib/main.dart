@@ -23,6 +23,6 @@ class App extends StatelessWidget {
     theme: ThemeData(
       colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
     ),
-    home: TrackingPage(db: Provider.of<AppDatabase>(context)),
+    home: TrackingPage(db: Provider.of<AppDatabase>(context, listen: false)),
   );
 }

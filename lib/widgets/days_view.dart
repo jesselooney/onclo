@@ -19,7 +19,7 @@ class DaysView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final db = Provider.of<AppDatabase>(context);
+    final db = Provider.of<AppDatabase>(context, listen: false);
     final today = DateTime.now().atStartOfDay;
     // TODO: Make this safe against time shenanigans.
     final itemCount = today.difference(firstDate).inDays + 1;
