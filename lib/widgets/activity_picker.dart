@@ -7,7 +7,7 @@ import 'package:onclo/models/models.dart';
 // Shows a modal bottom sheet containing an [ActivityPicker].
 //
 // The returned [Future] resolves to the [Activity] picked by the user, or null
-// if the user closed the bottom sheet.
+// if the user closed the bottom sheet without picking an activity.
 Future<Activity?> showActivityPicker({required BuildContext context}) async {
   final result = await showModalBottomSheet(
     context: context,
@@ -21,6 +21,9 @@ Future<Activity?> showActivityPicker({required BuildContext context}) async {
   return result;
 }
 
+/// A widget that allows picking an [Activity] by search or manual input.
+///
+/// This widget is usually displayed by calling [showActivityPicker].
 class ActivityPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Center(

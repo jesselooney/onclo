@@ -6,6 +6,7 @@ import 'package:onclo/extensions/extensions.dart';
 import 'package:onclo/models/models.dart';
 import 'package:onclo/widgets/widgets.dart';
 
+/// A widget that renders the time-tracking page.
 class TrackingPage extends StatefulWidget {
   final AppDatabase db;
 
@@ -18,6 +19,12 @@ class TrackingPage extends StatefulWidget {
 class _TrackingPageState extends State<TrackingPage> {
   final ItemScrollController scrollController = ItemScrollController();
   final DateTime defaultFirstDay = DateTime.now().atStartOfDay;
+
+  /// A stream whose values are the first day on which there is a [SessionEnd].
+  ///
+  /// In this case, "day" indicates that the DateTimes are rounded down to the,
+  /// start of the day on which they fall, since we only care about the day and
+  /// not the hour, minute, or lower units.
   late final Stream<DateTime> firstDayStream;
 
   @override

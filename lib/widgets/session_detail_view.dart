@@ -3,6 +3,9 @@ import 'package:intl/intl.dart';
 
 import 'package:onclo/models/models.dart';
 
+/// A widget showing a [Session] in detail.
+///
+/// Usually shown in a bottom sheet created by a [SessionEndView].
 class SessionDetailView extends StatelessWidget {
   final Session session;
 
@@ -10,7 +13,6 @@ class SessionDetailView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: Extract this modal bottom sheet design pattern into a generic component
     return FractionallySizedBox(
       heightFactor: 0.6,
       child: Container(
@@ -21,24 +23,24 @@ class SessionDetailView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                this.session.activity.name,
+                session.activity.name,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
-              Text(this.session.note),
+              Text(session.note),
               Text(
                 "start: " +
                     DateFormat(
                       "MMM d, yyyy 'at' HH:mm",
-                    ).format(this.session.startDate),
+                    ).format(session.startDate),
               ),
               Text(
                 "end: " +
                     DateFormat(
                       "MMM d, yyyy 'at' HH:mm",
-                    ).format(this.session.endDate),
+                    ).format(session.endDate),
               ),
               Text(
-                "${this.session.duration.inHours.remainder(24)}h${this.session.duration.inMinutes.remainder(60)}m",
+                "${session.duration.inHours.remainder(24)}h${session.duration.inMinutes.remainder(60)}m",
               ),
             ],
           ),

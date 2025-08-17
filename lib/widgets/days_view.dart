@@ -6,6 +6,7 @@ import 'package:onclo/database.dart';
 import 'package:onclo/extensions/extensions.dart';
 import 'package:onclo/widgets/day_view.dart';
 
+/// A widget that lists [DayView]s going from today back to `firstDate`.
 class DaysView extends StatelessWidget {
   final DateTime firstDate;
   final ItemScrollController? itemScrollController;
