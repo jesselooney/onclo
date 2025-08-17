@@ -16,8 +16,7 @@ class Activity {
   String get name => words.join(' ');
 
   /// Constructs an activity from a string by breaking it into [words].
-  Activity(String name)
-    : this.words = name.trim().split(RegExp(r'\s+'));
+  Activity(String name) : this.words = name.trim().split(RegExp(r'\s+'));
 
   @override
   bool operator ==(Object other) =>

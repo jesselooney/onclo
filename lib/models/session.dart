@@ -10,12 +10,16 @@ import 'package:onclo/models/activity.dart';
 class Session {
   /// The `id` of the [SessionEnd] backing this session.
   final int sessionEndId;
+
   /// The moment in time marking the start of this session.
   final DateTime startDate;
+
   /// The moment in time marking the end of this session.
   final DateTime endDate;
+
   /// The [Activity] performed during this session.
   final Activity activity;
+
   /// An arbitrary note specific to this session.
   final String note;
 
