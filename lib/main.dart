@@ -10,78 +10,135 @@ void main() {
   runApp(
     Provider<AppDatabase>(
       create: (context) => AppDatabase(),
-      child: MyApp(),
+      child: App(),
       dispose: (context, db) => db.close(),
     ),
   );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class App extends StatelessWidget {
+  const App({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Onclo (Alpha)',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: MyHomePage(
-        title: 'Flutter Demo Home Page',
-        db: Provider.of<AppDatabase>(context),
-      ),
+      home: TrackingPage(db: Provider.of<AppDatabase>(context)),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title, required this.db});
+class TrackingPage extends StatefulWidget {
+  const TrackingPage({super.key, required this.db});
 
-  final String title;
   final AppDatabase db;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<TrackingPage> createState() => _TrackingPageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _TrackingPageState extends State<TrackingPage> {
   final ItemScrollController itemScrollController = ItemScrollController();
-  late final Future<DateTime> future;
+  late final Future<DateTime> firstDateFuture;
 
   @override
   void initState() {
     super.initState();
     // TODO: Ideally this value is reactive -> streambuilder?
-    future = this.widget.db.earliestEndDate.then(
+    firstDateFuture = this.widget.db.earliestEndDate.then(
       (date) => (date ?? DateTime.now()).atStartOfDay,
     );
   }
 
+  Widget buildJumpToDayAction(
+    DateTime firstDate,
+    ItemScrollController itemScrollController,
+  ) => IconButton(
+    icon: const Icon(Icons.calendar_month),
+    onPressed: () async {
+      final DateTime? pickedDate = await showDatePicker(
+        context: context,
+        firstDate: firstDate,
+        lastDate: DateTime.now(),
+      );
+      if (pickedDate == null) return;
+      // WARN: This value is probably not always right.
+      final daysBetween = DateTime.now().difference(pickedDate).inDays;
+      itemScrollController.jumpTo(index: daysBetween);
+    },
+  );
+
+  Widget buildFab() => FloatingActionButton(
+    onPressed: () {
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        builder: (BuildContext context) => FractionallySizedBox(
+          heightFactor: 0.9,
+          child: Container(
+            padding: EdgeInsets.all(16.0),
+            child: Center(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextField(
+                    autofocus: true,
+                    onSubmitted: (String activityString) {
+                      final activity = Activity(activityString);
+                      if (!activity.name.isEmpty) {
+                        final db = Provider.of<AppDatabase>(
+                          context,
+                          listen: false,
+                        );
+                        db.endSessionNow(activity);
+                      }
+                      Navigator.pop(context);
+                    },
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: "Enter an activity",
+                    ),
+                  ),
+                  ListView(
+                    shrinkWrap: true,
+                    children: [
+                      ListTile(title: const Text("option one")),
+                      ListTile(title: const Text("option two")),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+    tooltip: 'Add Session',
+    child: const Icon(Icons.add),
+  );
+
+  Widget buildNavigationBar(BuildContext context) => NavigationBar(
+    destinations: [
+      NavigationDestination(icon: Icon(Icons.punch_clock), label: "Track Time"),
+      NavigationDestination(icon: Icon(Icons.bar_chart), label: "Analyze Time"),
+    ],
+  );
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: future,
+      future: firstDateFuture,
       builder: (context, snapshot) => Scaffold(
         appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          title: Text(widget.title),
+          title: Text('Track Time'),
           actions: snapshot.hasData
               ? [
-                  IconButton(
-                    icon: const Icon(Icons.calendar_month),
-                    onPressed: () async {
-                      final DateTime? pickedDate = await showDatePicker(
-                        context: context,
-                        firstDate: snapshot.requireData,
-                        lastDate: DateTime.now(),
-                      );
-                      if (pickedDate == null) return;
-                      // WARN: This value is probably not always right.
-                      final daysBetween = DateTime.now()
-                          .difference(pickedDate)
-                          .inDays;
-                      itemScrollController.jumpTo(index: daysBetween);
-                    },
+                  buildJumpToDayAction(
+                    snapshot.requireData,
+                    itemScrollController,
                   ),
                 ]
               : [],
@@ -101,63 +158,8 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            showModalBottomSheet<void>(
-              context: context,
-              isScrollControlled: true,
-              builder: (BuildContext context) => FractionallySizedBox(
-                heightFactor: 0.9,
-                child: Container(
-                  padding: EdgeInsets.all(16.0),
-                  child: Center(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        TextField(
-                          autofocus: true,
-                          onSubmitted: (String activityString) {
-                            final activity = Activity(activityString);
-                            if (!activity.name.isEmpty) {
-                              final db = Provider.of<AppDatabase>(
-                                context,
-                                listen: false,
-                              );
-                              db.endSessionNow(activity);
-                            }
-                            Navigator.pop(context);
-                          },
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: "Enter an activity",
-                          ),
-                        ),
-                        ListView(
-                          shrinkWrap: true,
-                          children: [
-                            ListTile(title: const Text("option one")),
-                            ListTile(title: const Text("option two")),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            );
-          },
-          tooltip: 'Add Session',
-          child: const Icon(Icons.add),
-        ),
-        bottomNavigationBar: NavigationBar(
-          destinations: const <Widget>[
-            NavigationDestination(icon: Icon(Icons.home), label: "Track Time"),
-            NavigationDestination(
-              icon: Icon(Icons.notifications_sharp),
-              label: "Analyze Time",
-            ),
-          ],
-        ),
+        floatingActionButton: buildFab(),
+        bottomNavigationBar: buildNavigationBar(context),
       ),
     );
   }
