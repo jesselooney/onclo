@@ -1,4 +1,4 @@
-package com.example.onclo_mobile
+package jesselooney.onclo
 
 import io.flutter.embedding.android.FlutterActivity
 

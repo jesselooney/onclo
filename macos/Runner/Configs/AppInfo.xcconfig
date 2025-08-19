@@ -5,10 +5,10 @@
 // 'flutter create' template.
 
 // The application's name. By default this is also the title of the Flutter window.
-PRODUCT_NAME = onclo_mobile
+PRODUCT_NAME = onclo
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.oncloMobile
+PRODUCT_BUNDLE_IDENTIFIER = jesselooney.onclo
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2025 com.example. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2025 jesselooney. All rights reserved.
