@@ -16,8 +16,7 @@ class SessionEndView extends StatelessWidget {
   Widget buildListTile({required BuildContext context}) {
     final db = Provider.of<AppDatabase>(context, listen: false);
     return ListTile(
-      leading: FilledButton(
-        // TODO: Allow for different time formats.
+      leading: FilledButton.tonal(
         child: Text(DateFormat.Hm().format(sessionEnd.endDate)),
         onPressed: () async {
           final newTimeOfDay = await showTimePicker(
@@ -106,7 +105,7 @@ class SessionEndView extends StatelessWidget {
         if (direction == DismissDirection.endToStart) {
           final String? newNote = await showTextFieldDialog(
             context: context,
-            title: 'New session note',
+            title: 'Edit session note',
             initialText: sessionEnd.note,
             autofocus: true,
             autoselect: true,
@@ -114,7 +113,7 @@ class SessionEndView extends StatelessWidget {
 
           // If the user did not cancel the dialog, update `sessionEnd`.
           if (newNote != null) {
-            final newSessionEnd = sessionEnd.copyWith(note: newNote);
+            final newSessionEnd = sessionEnd.copyWith(note: newNote.trim());
             db.update(db.sessionEnds).replace(newSessionEnd);
           }
 

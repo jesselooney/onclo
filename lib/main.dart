@@ -20,9 +20,6 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialApp(
     title: 'Onclo (Alpha)',
-    theme: ThemeData(
-      colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-    ),
     home: TrackingPage(db: Provider.of<AppDatabase>(context, listen: false)),
   );
 }

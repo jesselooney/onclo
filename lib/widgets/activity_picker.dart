@@ -25,10 +25,32 @@ Future<Activity?> showActivityPicker({required BuildContext context}) async {
 ///
 /// This widget is usually displayed by calling [showActivityPicker].
 class ActivityPicker extends StatelessWidget {
+  final List<Activity> activitySuggestions = [
+    Activity('sleep'),
+    Activity('prep morning'),
+    Activity('eat lunch'),
+    Activity('eat dinner'),
+    Activity('rest'),
+    Activity('prep night'),
+  ];
+
+  List<Widget> buildListTiles({required BuildContext context}) =>
+      activitySuggestions
+          .map(
+            (activity) => ListTile(
+              title: Text(activity.name),
+              onTap: () {
+                Navigator.pop(context, activity);
+              },
+            ),
+          )
+          .toList();
+
   @override
   Widget build(BuildContext context) => Center(
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: 8.0,
       children: [
         TextField(
           autofocus: true,
@@ -41,13 +63,7 @@ class ActivityPicker extends StatelessWidget {
             hintText: "Enter an activity",
           ),
         ),
-        ListView(
-          shrinkWrap: true,
-          children: [
-            ListTile(title: const Text("option one")),
-            ListTile(title: const Text("option two")),
-          ],
-        ),
+        Expanded(child: ListView(children: buildListTiles(context: context))),
       ],
     ),
   );
