@@ -8,7 +8,7 @@ extension AtTimeOfDay on DateTime {
   /// an hour and minute specified by `timeOfDay`. The smaller units are all
   /// set to zero.
   DateTime atTimeOfDay(TimeOfDay timeOfDay) {
-    return this.copyWith(
+    return copyWith(
       hour: timeOfDay.hour,
       minute: timeOfDay.minute,
       second: 0,
@@ -22,7 +22,7 @@ extension AtTimeOfDay on DateTime {
   /// The resulting DateTime has the same year, month, and day as this one, but
   /// the hour and lower units are all set to zero.
   DateTime get atStartOfDay {
-    return this.copyWith(
+    return copyWith(
       hour: 0,
       minute: 0,
       second: 0,
@@ -41,7 +41,7 @@ extension AtTimeOfDay on DateTime {
     const oneDay = Duration(days: 1);
     const twelveHours = Duration(hours: 12);
 
-    final newDate = this.atTimeOfDay(timeOfDay);
+    final newDate = atTimeOfDay(timeOfDay);
     final difference = newDate.difference(this);
 
     if (difference > twelveHours) {

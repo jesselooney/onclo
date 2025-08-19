@@ -52,6 +52,9 @@ class SessionEndView extends StatelessWidget {
       onTap: () async {
         final session = await db.getSessionFromSessionEnd(sessionEnd);
 
+        // See https://dart.dev/tools/linter-rules/use_build_context_synchronously.
+        if (!context.mounted) return;
+
         showModalBottomSheet<void>(
           context: context,
           isScrollControlled: true,
@@ -95,8 +98,6 @@ class SessionEndView extends StatelessWidget {
 
     return Dismissible(
       key: ValueKey(sessionEnd.id),
-
-      child: buildListTile(context: context),
 
       // Show a dialog when the user swipes this widget.
       confirmDismiss: (direction) async {
@@ -178,6 +179,9 @@ class SessionEndView extends StatelessWidget {
           ),
         ),
       ),
+
+      // At long last, the actual child.
+      child: buildListTile(context: context),
     );
   }
 }

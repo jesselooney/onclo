@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
-import 'package:onclo/database.dart';
 import 'package:onclo/models/models.dart';
 
 // Shows a modal bottom sheet containing an [ActivityPicker].
@@ -25,6 +23,8 @@ Future<Activity?> showActivityPicker({required BuildContext context}) async {
 ///
 /// This widget is usually displayed by calling [showActivityPicker].
 class ActivityPicker extends StatelessWidget {
+  ActivityPicker({super.key});
+
   final List<Activity> activitySuggestions = [
     Activity('sleep'),
     Activity('prep morning'),
@@ -63,7 +63,9 @@ class ActivityPicker extends StatelessWidget {
             hintText: "Enter an activity",
           ),
         ),
-        Expanded(child: ListView(children: buildListTiles(context: context))),
+        Expanded(
+          child: ListView(children: buildListTiles(context: context)),
+        ),
       ],
     ),
   );

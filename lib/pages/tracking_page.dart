@@ -3,7 +3,6 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import 'package:onclo/database.dart';
 import 'package:onclo/extensions/extensions.dart';
-import 'package:onclo/models/models.dart';
 import 'package:onclo/widgets/widgets.dart';
 
 /// A widget that renders the time-tracking page.
@@ -58,7 +57,10 @@ class _TrackingPageState extends State<TrackingPage> {
   Widget buildFab() => FloatingActionButton(
     onPressed: () async {
       final activity = await showActivityPicker(context: context);
-      if (activity != null) widget.db.endSessionNow(activity);
+      if (activity != null) {
+        widget.db.endSessionNow(activity);
+        scrollController.jumpTo(index: 0);
+      }
     },
     tooltip: 'Add Session',
     child: const Icon(Icons.add),

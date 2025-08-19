@@ -31,53 +31,53 @@ class SessionDetailView extends StatelessWidget {
         padding: EdgeInsets.all(16.0),
         child: Align(
           alignment: Alignment.topLeft,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Table(
+            // WARN: This width setting is supposedly very expensive.
+            defaultColumnWidth: const IntrinsicColumnWidth(),
             children: [
-              Text.rich(
-                TextSpan(
-                  style: Theme.of(context).textTheme.titleLarge,
-                  children: [
-                    TextSpan(
-                      text: durationText,
-                      style: TextStyle(fontWeight: FontWeight.bold),
+              TableRow(
+                children: [
+                  Text(
+                    '$durationText   ',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
                     ),
-                    TextSpan(text: " " + session.activity.name),
-                  ],
-                ),
+                  ),
+                  Text(
+                    session.activity.name,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ],
               ),
-              session.note.isEmpty
-                  ? Container()
-                  : Text(
-                      session.note,
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-              Padding(
-                padding: EdgeInsets.only(top: 8.0),
-                child: Table(
-                  // WARN: This width setting is supposedly very expensive.
-                  defaultColumnWidth: const IntrinsicColumnWidth(),
-                  children: [
-                    TableRow(
-                      children: [
-                        Text(
-                          'from   ',
-                          style: TextStyle(fontStyle: FontStyle.italic),
+              TableRow(
+                children: [
+                  Container(),
+                  session.note.isEmpty
+                      ? Container()
+                      : Text(
+                          session.note,
+                          style: Theme.of(context).textTheme.bodyLarge,
                         ),
-                        Text('${startTime} on ${startDay}'),
-                      ],
-                    ),
-                    TableRow(
-                      children: [
-                        Text(
-                          'to   ',
-                          style: TextStyle(fontStyle: FontStyle.italic),
-                        ),
-                        Text('${endTime} on ${endDay}'),
-                      ],
-                    ),
-                  ],
-                ),
+                ],
+              ),
+              // A spacer between the activity/note and from/to fields.
+              TableRow(
+                children: [SizedBox(height: 8.0), SizedBox(height: 8.0)],
+              ),
+              TableRow(
+                children: [
+                  Text(
+                    'from   ',
+                    style: TextStyle(fontStyle: FontStyle.italic),
+                  ),
+                  Text('$startTime on $startDay'),
+                ],
+              ),
+              TableRow(
+                children: [
+                  Text('to   ', style: TextStyle(fontStyle: FontStyle.italic)),
+                  Text('$endTime on $endDay'),
+                ],
               ),
             ],
           ),

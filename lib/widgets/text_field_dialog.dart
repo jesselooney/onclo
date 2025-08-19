@@ -52,9 +52,9 @@ class _TextFieldDialogState extends State<TextFieldDialog> {
   @override
   void initState() {
     super.initState();
-    controller.text = this.widget.initialText;
+    controller.text = widget.initialText;
 
-    if (this.widget.autoselect) {
+    if (widget.autoselect) {
       controller.selection = TextSelection(
         baseOffset: 0,
         extentOffset: controller.text.length,
@@ -70,10 +70,10 @@ class _TextFieldDialogState extends State<TextFieldDialog> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-    title: Text(this.widget.title),
+    title: Text(widget.title),
     content: TextField(
       controller: controller,
-      autofocus: this.widget.autofocus,
+      autofocus: widget.autofocus,
       onSubmitted: (newText) {
         Navigator.pop(context, newText);
       },
