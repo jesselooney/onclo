@@ -2,7 +2,7 @@
 
 Onclo (ON-cloh) is a time-tracking mobile app designed to help you put each of your precious minutes **on** the **clo**ck. Use it to gain insight into how you spend your time and stay on track with your goals.
 
-**DISCLAIMER:** Onclo is in very early development with no stability or backwards compatibility guarantees. As such, it is currently in closed beta and not publicly available.
+**DISCLAIMER:** Onclo is in very early development with no stability or backwards compatibility guarantees. As such, it is currently in closed beta and not publicly available on app stores.
 
 ## Screenshots
 
