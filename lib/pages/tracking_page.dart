@@ -3,6 +3,7 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import 'package:onclo/database.dart';
 import 'package:onclo/extensions/extensions.dart';
+import 'package:onclo/pages/options_page.dart';
 import 'package:onclo/widgets/widgets.dart';
 
 /// A widget that renders the time-tracking page.
@@ -79,6 +80,15 @@ class _TrackingPageState extends State<TrackingPage> {
     stream: firstDayStream,
     builder: (context, snapshot) => Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.settings),
+          onPressed: () async {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => OptionsPage()),
+            );
+          },
+        ),
         title: Text('Track Time'),
         actions: snapshot.hasData
             ? [buildJumpToDayAction(firstDay: snapshot.requireData)]
