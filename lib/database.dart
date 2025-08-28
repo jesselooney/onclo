@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/material.dart' show TimeOfDay;
+import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import 'package:onclo/converters/converters.dart';
@@ -99,12 +100,18 @@ class AppDatabase extends _$AppDatabase {
     return Session.fromSessionEnd(sessionEnd, startDate);
   }
 
+  static String databaseName = "app_database";
+  static Future<String> databasePath() async {
+    return p.join(
+      (await getApplicationSupportDirectory()).path,
+      "$databaseName.sqlite",
+    );
+  }
+
   static QueryExecutor _openConnection() {
     return driftDatabase(
-      name: 'app_database',
-      native: const DriftNativeOptions(
-        databaseDirectory: getApplicationSupportDirectory,
-      ),
+      name: databaseName,
+      native: const DriftNativeOptions(databasePath: databasePath),
     );
   }
 }
